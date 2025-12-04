@@ -143,7 +143,7 @@
 
 ---
 
-## Requisitos Previos
+## Requisitos Previos Para correr en LOCALHOST
 
 Antes de comenzar, asegúrate de tener instalado:
 
@@ -151,6 +151,8 @@ Antes de comenzar, asegúrate de tener instalado:
 - **npm** >= 9.0.0 o **yarn** >= 1.22.0
 - Una cuenta en [Supabase](https://supabase.com) (gratuita)
 - Git
+
+- Si desea utilizar la pagina ingresa a https://cimasur-community.vercel.app/
 
 ---
 
@@ -258,6 +260,9 @@ profiles (usuarios)
 ├── email (TEXT, UNIQUE)
 ├── full_name (TEXT)
 ├── role (TEXT: admin|mesa_directiva|residente)
+├── unit_number (TEXT)
+├── tower (TEXT)
+├── apartment (TEXT)
 └── created_at (TIMESTAMPTZ)
      │
      ├──< payments (pagos)
@@ -281,8 +286,7 @@ common_areas (áreas comunes)
 ├── id (SERIAL, PK)
 ├── name (TEXT)
 ├── display_name (TEXT)
-├── description (TEXT)
-└── available (BOOLEAN)
+└── description (TEXT)
 ```
 
 
