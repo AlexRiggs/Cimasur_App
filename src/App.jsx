@@ -4,11 +4,10 @@ import {
   LogOut, Building, PlusCircle, AlertTriangle, 
   ArrowLeft, Lock, Mail, Loader, X, CreditCard,
   Filter, ChevronDown, Bug, UserPlus, Edit, Trash2,
-  ChevronLeft, ChevronRight, Clock, Check
+  ChevronLeft, ChevronRight, Clock, Check, Search
 } from 'lucide-react';
 
-// Usamos CDN para asegurar compatibilidad
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from '@supabase/supabase-js';
 
 // --- CONFIGURACIÓN DE SUPABASE ---
 const SUPABASE_URL = 'https://tgnmkxmdqfzmmqcexcvy.supabase.co';
@@ -298,7 +297,9 @@ const AdminDashboard = ({ supabase }) => {
   const [bookings, setBookings] = useState([]);
   const [residents, setResidents] = useState([]); 
   const [loading, setLoading] = useState(true);
-
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showResidentList, setShowResidentList] = useState(false);
+  
   // Filtros
   const TOWERS = ["Boxta", "Matsu", "Argu", "Behui"];
   const [selectedTower, setSelectedTower] = useState('Todas');
@@ -740,25 +741,71 @@ const AdminDashboard = ({ supabase }) => {
                  <button onClick={() => setShowPaymentModal(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
               </div>
               <form onSubmit={handleCreatePayment} className="p-6 space-y-4">
-                 <div>
+                  <div className="relative">
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Residente</label>
-                    <select 
-                      className="w-full border rounded p-2 bg-white"
-                      value={newPayment.user_id}
-                      onChange={e => setNewPayment({...newPayment, user_id: e.target.value})}
-                      required
-                    >
-                       <option value="">Seleccionar residente...</option>
-                       {residents && residents.length > 0 ? (
-                           residents.map(r => (
-                             <option key={r.id} value={r.id}>
-                               {r.unit_number} - {r.full_name} ({r.tower})
-                             </option>
-                           ))
-                       ) : (
-                           <option disabled>Cargando residentes o lista vacía...</option>
-                       )}
-                    </select>
+                    
+                    {/* Input de Búsqueda */}
+                    <div className="relative">
+                        <input 
+                            type="text"
+                            className="w-full border rounded p-2 pl-8 text-sm bg-white focus:ring-2 focus:ring-pink-500 outline-none"
+                            placeholder="Buscar por nombre o unidad..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setShowResidentList(true);
+                                // Si borra, limpiamos la selección
+                                if(e.target.value === '') setNewPayment({...newPayment, user_id: ''});
+                            }}
+                            onFocus={() => setShowResidentList(true)}
+                        />
+                        <Search className="absolute left-2 top-2.5 text-slate-400" size={16} />
+                        
+                        {/* Botón para limpiar selección si ya se eligió uno */}
+                        {newPayment.user_id && (
+                            <button 
+                                type="button"
+                                onClick={() => {
+                                    setNewPayment({...newPayment, user_id: ''});
+                                    setSearchTerm('');
+                                    setShowResidentList(true);
+                                }}
+                                className="absolute right-2 top-2 text-slate-400 hover:text-red-500"
+                            >
+                                <X size={16}/>
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Lista Desplegable Filtrada */}
+                    {showResidentList && (
+                        <div className="absolute z-50 w-full bg-white border border-slate-200 rounded-lg shadow-xl mt-1 max-h-48 overflow-y-auto">
+                            {residents
+                                .filter(r => 
+                                    r.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                    r.unit_number.toString().includes(searchTerm) ||
+                                    r.tower.toLowerCase().includes(searchTerm.toLowerCase())
+                                )
+                                .map(r => (
+                                    <div 
+                                        key={r.id}
+                                        onClick={() => {
+                                            setNewPayment({...newPayment, user_id: r.id});
+                                            setSearchTerm(`${r.unit_number} - ${r.full_name}`); // Pone el nombre en el input
+                                            setShowResidentList(false); // Cierra la lista
+                                        }}
+                                        className="p-2 hover:bg-slate-50 cursor-pointer text-sm border-b last:border-0 flex justify-between"
+                                    >
+                                        <span className="font-bold text-slate-700">{r.unit_number}</span>
+                                        <span className="text-slate-600 truncate ml-2">{r.full_name}</span>
+                                    </div>
+                                ))
+                            }
+                            {residents.filter(r => r.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || r.unit_number.toString().includes(searchTerm)).length === 0 && (
+                                <div className="p-3 text-xs text-slate-400 text-center">No se encontraron residentes.</div>
+                            )}
+                        </div>
+                    )}
                  </div>
                  <div className="grid grid-cols-2 gap-4">
                    <div>
