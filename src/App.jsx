@@ -6,6 +6,7 @@ import {
   Filter, ChevronDown, Bug, UserPlus, Edit, Trash2,
   ChevronLeft, ChevronRight, Clock, Check
 } from 'lucide-react';
+
 // Usamos CDN para asegurar compatibilidad
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
